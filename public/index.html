@@ -29,6 +29,7 @@
             overflow: hidden;
             position: relative;
             margin-top: 20px;
+            cursor: grab;
         }
 
         .cover img {
@@ -36,6 +37,7 @@
             height: 100%;
             object-fit: cover;
             display: block;
+            transition: transform 0.3s ease;
         }
 
         .cover .overlay {
@@ -78,7 +80,7 @@
 
 <div class="container">
     <h1>Songer</h1>
-    <div class="cover">
+    <div class="cover" id="cover" onclick="handleSwipeLeft()">
         <img id="cover-image" src="https://via.placeholder.com/450x600" alt="Album Cover Placeholder">
         <div class="overlay">
             <h2 id="song-title">Song Title</h2>
@@ -90,6 +92,11 @@
 </div>
 
 <script>
+    let startX = 0;
+    let threshold = 100;
+
+    document.getElementById('cover').addEventListener('mousedown', startDrag);
+
     async function getRandomSong() {
         try {
             const response = await fetch('/random-song');
@@ -106,6 +113,34 @@
             alert('Error fetching random song. Please make sure you are logged in.');
         }
     }
+
+    function startDrag(event) {
+        startX = event.clientX;
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', endDrag);
+    }
+
+    function drag(event) {
+        let currentX = event.clientX;
+        let diffX = currentX - startX;
+
+
+        document.getElementById('cover-image').style.transform = `translateX(${diffX}px)`;
+
+        if (diffX < -threshold) {
+            getRandomSong();
+            document.getElementById('cover-image').style.transform = `translateX(0px)`;
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('mouseup', endDrag);
+        }
+    }
+
+    function endDrag() {
+        document.getElementById('cover-image').style.transform = `translateX(0px)`;
+        document.removeEventListener('mousemove', drag);
+        document.removeEventListener('mouseup', endDrag);
+    }
+
 </script>
 
 </body>
